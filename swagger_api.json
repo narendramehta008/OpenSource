@@ -1,0 +1,723 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Auto Population API",
+    "description": "Auto Population API's for getting company watch and bank verification info",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/audit/companywatch": {
+      "get": {
+        "tags": ["Audit"],
+        "summary": "Auditing the company watch request and response data.",
+        "parameters": [
+          {
+            "name": "Identifier",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maxLength": 8,
+              "pattern": "^[A-Za-z0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Country",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "UK"
+            }
+          },
+          {
+            "name": "CheckType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "companyCheck"
+            }
+          },
+          {
+            "name": "SourceSystem",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^[A-Za-z0-9]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyAuditResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyAuditResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyAuditResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/autopopulation/companieshouserequest": {
+      "get": {
+        "tags": ["Auto Population"],
+        "summary": "Validating the company Number and calling the Company Watch(UK) or VisionNet(ROI) API to return all the details of the provided company number",
+        "description": "Here we checking companynumber from the Company Watch(UK) or VisionNet(ROI) and returning the response.",
+        "parameters": [
+          {
+            "name": "CompanyNumber",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maxLength": 8,
+              "pattern": "^[A-Za-z0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "CountryCode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "UK"
+            }
+          },
+          {
+            "name": "PoValue",
+            "in": "query",
+            "schema": {
+              "pattern": "^[A-Za-z0-9]+$",
+              "type": "string",
+              "default": "PO00000001"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a group of shareHolders,  directors, address from the given companyNumber",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHouseDataDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHouseDataDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyHouseDataDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If companyNumber is not found with given company number.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unable to access the API."
+          }
+        }
+      }
+    },
+    "/api/autopopulation/verifybankdetails": {
+      "get": {
+        "tags": ["Auto Population"],
+        "summary": "Validating the Account Number and SortCode for the customer using CDD Platform.",
+        "parameters": [
+          {
+            "name": "AccountNumber",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SortCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankDetailsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankDetailsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankDetailsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/autopopulation/getencryptedkey": {
+      "get": {
+        "tags": ["Auto Population"],
+        "summary": "end point to get the encryptedKey",
+        "parameters": [
+          {
+            "name": "Key",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "line1": {
+            "type": "string",
+            "nullable": true
+          },
+          "line2": {
+            "type": "string",
+            "nullable": true
+          },
+          "line3": {
+            "type": "string",
+            "nullable": true
+          },
+          "line4": {
+            "type": "string",
+            "nullable": true
+          },
+          "line5": {
+            "type": "string",
+            "nullable": true
+          },
+          "poBoxAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "postalArea": {
+            "type": "string",
+            "nullable": true
+          },
+          "postcode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BankDetailsDto": {
+        "type": "object",
+        "properties": {
+          "bankName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "isValid": {
+            "type": "boolean"
+          },
+          "isDirectDebitCapable": {
+            "type": "boolean"
+          },
+          "accountNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyAuditDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "system": {
+            "type": "string",
+            "nullable": true
+          },
+          "isCache": {
+            "type": "boolean"
+          },
+          "requestedOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsePayload": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyAuditResult": {
+        "type": "object",
+        "properties": {
+          "poName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyAudit": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyAuditDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyHouseDataDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "aggregatePrinciples": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrincipleDto"
+            },
+            "nullable": true
+          },
+          "businessDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyType": {
+            "type": "string",
+            "nullable": true
+          },
+          "newCompanyType": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryOfIncorporation": {
+            "type": "string",
+            "nullable": true
+          },
+          "dissolvedEntity": {
+            "type": "boolean"
+          },
+          "incorporationDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "directors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DirectorDto"
+            },
+            "nullable": true
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentDto"
+            },
+            "nullable": true
+          },
+          "identifiedCompaniesInGroup": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "immediateParent": {
+            "type": "string",
+            "nullable": true
+          },
+          "immediateSubsidiaries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImmediateSubsidiaryDto"
+            },
+            "nullable": true
+          },
+          "noOfImmediateSubsidiaries": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "registeredName": {
+            "type": "string",
+            "nullable": true
+          },
+          "psCs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PscDto"
+            },
+            "nullable": true
+          },
+          "shareHolders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShareholderDto"
+            },
+            "nullable": true
+          },
+          "tradingAddresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressDto"
+            },
+            "nullable": true
+          },
+          "ultimateParent": {
+            "type": "string",
+            "nullable": true
+          },
+          "vatNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "webUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DirectorDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "$ref": "#/components/schemas/NameDto"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "nullable": true
+          },
+          "position": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryOfResidence": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ImmediateSubsidiaryDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "directors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DirectorDto"
+            },
+            "nullable": true
+          },
+          "registeredName": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shareHolders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubsidiaryShareholderDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NameDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "middleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PrincipleDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryOfResidence": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "$ref": "#/components/schemas/NameDto"
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentageOfVotingSharesOwned": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "positions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
+      },
+      "PscDto": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryOfResidence": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "$ref": "#/components/schemas/NameDto"
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentageOfVotingSharesOwned": {
+            "type": "string",
+            "nullable": true
+          },
+          "pscDirectorNumber": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShareholderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/NameDto"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "countryOfResidence": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "nullable": true
+          },
+          "directorNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "percentageOfVotingSharesOwned": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "position": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubsidiaryShareholderDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/NameDto"
+          },
+          "percentageOfVotingSharesOwned": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
+}
